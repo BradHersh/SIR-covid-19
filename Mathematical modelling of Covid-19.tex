@@ -1,0 +1,226 @@
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{amsmath,amssymb,amsthm,amsfonts}
+\usepackage{ragged2e}
+\usepackage{minted}
+\usepackage{csquotes}
+\pagestyle{plain}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{graphicx}
+\usepackage{amsmath,amssymb,amsthm,amsfonts}
+\usepackage{ragged2e}
+\usepackage{minted}
+\pagestyle{plain}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{url}
+\graphicspath{/home/user/documents/}
+\addtolength{\oddsidemargin}{-.875in}
+\addtolength{\evensidemargin}{-.875in}
+\addtolength{\textwidth}{1.75in}
+\addtolength{\topmargin}{-.875in}
+\addtolength{\textheight}{1.75in}
+
+
+\title{Relaxing Social Distancing and Lockdown Measures during the COVID-19 Pandemic}
+\author{Charlotte Mason and Brad Hershowitz \\Under the direction of Viney Kumar and Adele Jackson}
+
+\date{July 2020}
+
+\begin{document}
+\sloppy
+
+\maketitle
+
+\section{Abstract}
+
+Many nations are relaxing their lockdown or social distancing measures in an attempt to recover from the disastrous impacts of the recent worldwide COVID-19 pandemic. While this can bolster the economy and increase the labour force, it can also increase the number of people infected with the virus, as more people start to interact. In this paper, we extend the SIR model to handle a lockdown scenario, where the population is initially isolated and people are steadily introduced into the population according to a given government policy or rule. We then numerically find policies (for a given set of initial conditions), that attempt to minimise the maximum number of infected people. Our results show that optimal policies clearly exist, and that good policies tend to be quick to allow the first 25-50\% of the population to interact while allowing time for the rest of the population to be slowly phased in with as little risk of infection as possible.
+
+\section{Introduction}
+
+In December 2019, a novel strain of coronavirus, SARS-CoV-2, was identified in Wuhan, China. Although Chinese authorities introduced radical measures to contain the outbreak, the disease spread globally and a COVID-19 pandemic developed in the following months. On the 21st of July, it was reported that there were 14.8 million total cases and over 600,000 deaths worldwide (Worldometers, 2020). \newline
+
+Australia has been affected considerably. COVID-19 was first identified in Australia in late January 2020 (Australian Government Department of Health, 2020). In March, there was an influx of cases among travellers returning from overseas, which in turn, led to increased community transmission in Australian cities and states (Moss et al., 2020). The Australian government acted quickly to implement strict controls in order to slow the spread of COVID-19. This included widespread restrictions on social gatherings, closure of businesses and facilities, banning of non-essential local travel and closure of borders to non-residents (Prime Minister of Australia, 2020). These measures resulted in a sharp drop in the number of new cases in Australia. However, a second wave of infections in the state of Victoria commenced in late June, due to public complacency and failures in hotel quarantine, and is currently ongoing (BBC, 2020). \newline
+
+Similar to Australia, lockdown and social distancing measures have been implemented around the world in an attempt to slow the spread of COVID-19. Although these measures are often successful in reducing the infection rate, they can have significant economic and social consequences for the respective populations. Academic research has identified an increase in poverty and inequality among populations placed in lockdown (Bonaccorsi et al., 2020). This suggests that it may be necessary to lift such restrictions as soon as possible, but the question remains; how best should a lockdown be relaxed? Considering the second wave of infection in Victoria, the repercussions of easing such restrictions too soon can be disastrous. \newline
+
+In this paper, we attempt to answer this question by modelling the COVID-19 virus and introducing certain constraints. ``Predictive mathematical models for epidemics are fundamental to understand the course of the epidemic and to plan effective control strategies'' (Giordano et al., 2020). By modelling COVID-19 and introducing a simulated lockdown, we can better predict the impact that this will have on slowing the spread of the virus. Additionally, the effect of the relaxation of lockdown and social distancing measures can be modelled and the optimal trajectory for the relaxation of the lockdown can be identified. This is important as it can help to inform governments and policy-makers as to when it may be possible to lift restrictions with less risk of a second wave of infections. \newline
+
+A commonly used method to model the spread of disease is the SIR model for human-to-human transmission. This model ``describes the flow of individuals through three mutually exclusive stages of infection: susceptible, infected and recovered'' (Giordano et al., 2020). We will attempt to modify the SIR model in order to handle situations where a lockdown or social distancing measures are relaxed over a period of time. Furthermore, we focus on ``flattening the curve'', which in a mathematical context, describes the process of lowering the maximum proportion of infected people over the time period. We aim to numerically determine policies that will contribute to this ``flattening of the curve'', and thereby identify the most effective policies to reduce the COVID-19 infection rate.
+
+\section{Description of Mathematical Model}
+
+\subsection{Description of Variables}
+
+The SIR model separates the population into several compartments; susceptible, infected and recovered. The first set of dependent variables for our model counts the proportion of people in each of these groups, each as a function of time. \newline
+
+$S(t)$ is the proportion of susceptible individuals in month $t$
+\\
+
+$I(t)$ is the proportion of infected individuals in month $t$
+\\
+
+$R(t)$ is the proportion of recovered individuals in month $t$
+\\
+
+\noindent
+Before determining the transitions between these states, it is necessary to define several parameters which impact these transitions: \newline
+
+The reproductive rate of COVID-19, called the $R_0$, ``measures the average number of secondary infections caused by a single case'' (Australian Government Department of Health, 2020). It is a necessary component to model how a disease spreads through the population. However, there exists  a significant disparity in the $R_0$ value for COVID-19 calculated by different studies. This is largely because the $R_0$ is a context specific measurement (Delamater et al., 2019). For instance, the $R_0$ will be lower in countries who have implemented strong public health measures which reduce contact between members of the population. ``A recent review of 12 studies estimates  the basic $R_0$ for COVID-19 to be 3.28 and the median $R_0$ to be 2.79'' (Australian Government Department of Health, 2020). For the purposes of 
+our model, we chose to utilise the basic $R_0$; 3.28, as we initially sought to  model the coronavirus curve without any constraints such as lockdown, meaning that a higher $R_0$ value is preferable. \newline
+
+Recently, questions have arisen around whether a person who has recovered from COVID-19 can be re-infected (COVID-19 Scientific Advisory Group, 2020). This follows reports of re-infection in a small number of cases  (Australian Government Department of Health, 2020). At this point in time, scientific research on this issue is still being conducted. However, ``a preprint paper suggested that re-infection may be a fairly common occurrence: 14\% of individuals in a cohort of patients followed after hospital discharge had a re-detectable positive'' (COVID-19 Scientific Advisory Group, 2020). Hence, we decided to introduce a 14\% reinfection rate ($\beta$) to our model. \newline
+
+Furthermore, we set the initial infected population as  1\% of the total population in order to accurately reflect the initial spread of COVID-19. We chose to model the spread of COVID-19 over two years, as this allows for a more comprehensive analysis of the long-lasting impacts of the virus. \newline
+
+We also define a function $u(t)$, which represents the level of social mixing in the population, with 0 being no mixing between individuals and 1 being full mixing between individuals. We define parameters $L$ and $T$, which represent the time at which lockdown is imposed, and the time at which lockdown is fully lifted, respectively. We set $L = 1$ , because many countries implemented lockdown at a relatively early stage in the virus. We set $T = 5$ , as most countries sought to lift lockdown after approximately four months in order to mitigate any severe social and economic impacts.
+
+
+This means that the function $u(t)$ satisfies the following conditions:
+
+$$u(t < L) = 1 $$
+$$u(t \geq T) = 1$$
+$$u(L) = 0 $$
+$$0 \leq u(t) \leq 1$$
+
+\subsection{Mathematical Model}
+In order to represent the transitions between these different compartments, we define three differential equations.
+
+$$ \frac {dS} {dt } = - R_0 u(t) S I + \beta R $$
+
+$$ \frac {dI} {dt}  = R_0 S I u(t) - I $$
+
+$$ \frac {dR} {dt} = I - \beta R $$
+
+where $u(t)$ represents the social mixing between the population, $R_0$ is the reproductive rate, $\beta$ is the reinfection rate, and S, I and R represent the proportion of susceptible, infected and recovered individuals respectively.
+
+The change in the susceptible population is the result of both a transition  to the infected population at the rate the disease spreads ($R_0$), in addition to receiving people from the recovered population at the rate of reinfection ($\beta$). The change in the infected population is the result of both a transition to the recovered population once they have recovered from the virus, in addition to receiving people from the susceptible population who have contracted the virus. The change in the recovered population is the result of transition to the susceptible population due to the possibility of reinfection, in addition to receiving those that have recovered from the infected state.
+
+
+\section{Solving the model}
+
+The most basic version of our model simply illustrates how the virus spreads over 24 months without any constraints.
+
+\begin{figure}[htbp]
+\caption{Basic model - no constraints}
+\centerline{\includegraphics[scale=.4]{basicSIR_new}}
+\end{figure}
+
+\noindent
+In order to model the impact of lockdown and other social distancing measures we need to implement a function $u(t)$ which represents the impact of these measures on the social mixing of the population. We aim to solve the model for a particular function $u(t)$, which we define as:
+
+$$u(t)= (\frac {t} {T})^{x} ,  L < t < T$$
+
+where $x$ is a power that will be optimised.
+
+This function is a monotonically increasing function, which reflects the
+gradual easing of restrictions leading up to the point at which lockdown is  fully relaxed, $T$. After time $T$, the $u(t)$ function returns a value of 1,since there is no lockdown. \newline
+
+Within the differential equations, the interaction between susceptible and infected populations is multiplied by the function $u(t)$. This means that the  interaction between these different states is reduced when $u(t) < 1$, that is when lockdown is implemented. This leads to a slowing in the spread of the virus, meaning that our model is effective in simulating a generic lockdown. \newline
+
+\noindent 
+A basic strategy when going through a lockdown period would be to lift the restrictions at a constant rate. This can be reflected by a linearly increasing social mixing function, given by $x=1$ in the function $u(t)$. The resulting plot is depicted below.
+
+\begin{figure}[htbp]
+\caption{Model including linear $u(t)$ function}
+\centerline{\includegraphics[scale=.4]{linear_new}}
+\end{figure}
+
+\noindent
+Now, we attempt to ``flatten the curve'', which describes the process of lowering the maximum proportion of infected people over the time period. In order to most effectively ``flatten the curve'' we test a range of different of values for the power $x$. By adjusting $x$, we are adjusting the rate at which the function $u(t)$ changes. By identifying the optimal power which best ``flattens the curve'' we can then identify the optimal rate, represented by $u(t)$, at which to transition between different stages of lockdown. \newline
+
+In order to find an effective policy we searched policies with powers from $x=0$, to $x=5$, with increments of 0.01. If the power is greater than $x=5$, the rate at which lockdown and restrictions are relaxed becomes too large, which is not a realistic strategy. The table below identifies the most effective powers at minimising the peak of the infection curve. \newline 
+
+\begin{figure}[H]
+\caption{Table of best powers for minimising peak of infection curve}
+\centerline{\includegraphics[scale=.5]{table_new}}
+\end{figure}
+
+
+The power $x=1.08$ yields the minimum peak of the infection curve. The plot using this power is below.
+
+\begin{figure}[H]
+\caption{Model where $x=1.08$ in $u(t)$ function}
+\centerline{\includegraphics[scale=.4]{bestpower_new}}
+\end{figure}
+
+\noindent
+In order to implement more sophisticated methods to minimise the peak of the infection curve, we implemented an algorithm called simulated annealing which is commonly utilised to solve optimisation problems (Geltman, 2014). In other words, if we can discretize the space $ [L,T] \times [0,1]$ into a grid of points, then there are only a finite number of paths that the function $u(t)$ can take. This number of paths depends on how coarse or fine the grid is. Simulated annealing is an algorithm which moves the points in order to find the optimal path. \newline
+
+The annealing algorithm starts with a given set of social mixing values for each month of the model. For this given set of values we calculate the peak of the infection curve. We compare this peak with that given by a new array, which is a neighbouring solution containing values that have been slightly adjusted from the previous array. If the peak of the new set of values is less than that of the previous set we adopt the new set of values. If this is not true, we check whether a predetermined probability criteria is passed;
+
+$$P=e^\frac { -(C(s') - C(s)) } {M} $$
+
+where $P$ is the probability criteria, $C(x)$ is the cost function determining the peak of $I(t)$, $s'$ and $s$ are the neighbouring and existing solutions respectively, and $M$ is a ratio that represents the willingness to switch to a different solution (based on how much searching the algorithm has done so far). 
+
+This probability criteria is to ensure that we do not get stuck at a local minimum, and instead find the global minimum. Upon reaching the final stage of the searching loop, the algorithm should arrive at the global minimum of the peak of the infection curve, and returns the array of social mixing values that correspond to this minimum. \newline 
+
+The algorithm we utilised looped through a thousand steps and generation the following array; \newline
+
+$[1, 0.30109626, 0.18091621, 0.07273848, 0.73448098, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]$ \newline
+
+\noindent
+The array indicates that, for the first month, the model allows the virus to take its natural coarse of action with full social mixing occurring, $u(t) = 1$. From the start of the second month, the model imposes an initial full lockdown before progressively easing up until time $T$ whereby restrictions are fully lifted.
+
+\noindent
+A plot of these points illustrates the optimal social mixing strategy that should be imposed in order to minimise the peak of the infection curve;
+
+\begin{figure}[H]
+\caption{Optimal social mixing strategy}
+\centerline{\includegraphics[scale=.4]{annealing_new}}
+\end{figure}
+
+\noindent
+Using this array of values for the function $u(t)$ results in the following graph;
+
+\begin{figure}[H]
+\caption{Model including optimal social mixing strategy}
+\centerline{\includegraphics[scale=.4]{annealingplot_new}}
+\end{figure}
+
+\section{Discussion}
+
+\noindent
+The table below illustrates the peak of the infection curves for the different graphs, which each have various constraints imposed on them.
+
+\begin{center}
+\begin{tabular}{ |c|c| }
+Model & Peak of Infection Curve \\ [0.5ex]
+\hline\hline
+ Figure 1 & 0.416 \\ 
+ Figure 2 & 0.199 \\  
+ Figure 4 & 0.198 \\
+ Figure 6 & 0.197
+\end{tabular}
+\end{center}
+
+
+As is evident in the table above, the peak of the infection curve decreases as we developed the constraints of our model. Starting with a basic model with no constraints (Figure 1), the spread of the infection is not mitigated against and consequently, this model generates the largest peak. When introducing a linear lockdown policy (Figure 2), the peak of the infection curve was significantly decreased, as is evident in the table. Additionally, the peak infection date occurred 2 months later than it did for the model with no constraints, which illustrates how the linear lockdown policy initially slowed the spread of the disease. \newline
+
+In order to not only slow the spread of the virus, but to further minimise the peak of the infection curve, a more comprehensive lockdown policy needs to be implemented. Introducing a non-linear lockdown policy (Figure 4) led to this further reduction in the peak of the infection curve. Applying this mathematical function to a real-life policy, the model reflects a sudden transition to a full lockdown, after which the first quarter of the population is allowed to interact relatively quickly. The rest of the population is then  phased in at a near constant rate, with as little risk of infection as possible. \newline
+
+We employed an annealing algorithm in order to further minimise the peak of the infection curve and slow the initial spread of the virus (Figure 6). Although the peak of the infection was slightly reduced compared to Figure 4, a more noticeable difference was the delay of the peak infection by 3 months. In real-world circumstances, this would be beneficial as public health services would be given more time to prepare for the influx of patients. Applying this mathematical model to a real-life policy (evident in Figure 5), the model reflects a staggered transition to a full lockdown with restrictions  initially being relaxed at a relatively high, constant rate. Nearing the end of the lockdown (approaching time T), the model illustrates that final restrictions are kept in place for longer and relaxed at slower rate. This means that the first half of the population can interact soon after lockdown is imposed, while the rest of the population is phased in more slowly. \newline
+
+Running the model under different initial conditions also yielded successful results, but with a few noted differences. Adjusting the lockdown parameters; $L$ and $T$, resulted in a less effective minimisation of the peak of the infection curve. Beginning the lockdown when $L=0$, in other words jumping into a lockdown where there is a very low proportion of infected people, did little to minimise the peak of the infection curve, and simply delayed it until lockdown was relaxed. This is analogous to the lockdown policy implemented in South Africa, whereby the lockdown was enforced at a very early stage, and consequently the infection rate began rising rapidly as soon as lockdown was released. Additionally, when the initial infected population ($I_0$) is large, ``flattening the curve'' has a much greater impact, and vastly reduces the number of infected people in the long run. \newline
+
+All together, the model arrives at two optimal lockdown policies, both of which can effectively ``flatten the curve'' and slow the spread of the virus. However, further work is needed in order to validate the insights produced by the numerical simulations.  Firstly, the model needs to be solved analytically (when given the initial conditions), so that an optimal policy can be found.  This solution can then be compared to the best solutions we found with our numerical search strategy in order to ascertain how much worse our solution really is.  In addition, the model needs to be solved for varying values of $R_0$ , and in scenarios where $R_0$ is a function of $S$ and $I$.  This would enable us to check if the insights generalise when the infection dynamics increase in complexity. \newline
+
+\section{Conclusion}
+
+Ultimately, COVID-19 poses an unprecedented public health challenge that has resulted in over 600,000 fatalities worldwide. This global pandemic has stressed the importance of utilising mathematical models in order to help devise effective strategies and policies that can help alleviate the detrimental impacts of the virus. Our model demonstrates how a comprehensive lockdown policy can potentially decrease total infections of COVID-19 by up to 20\% of the total population. We hope that this model and insights can be used to strengthen the current understanding of the dynamics of an infectious disease in lockdown scenarios and emphasise the importance of effective policy in these critical situations.
+
+\section{References}
+
+\begin{figure}[H]
+\centerline{\includegraphics[scale=.67]{bib2}}
+\end{figure}
+
+\section{Appendix}
+
+The code for the model can be found at this link; \newline
+https://filebin.net/vfaei5u4argzhy34
+
+\end{document}
